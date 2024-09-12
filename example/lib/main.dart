@@ -22,10 +22,10 @@ class ChewieDemo extends StatefulWidget {
 }
 
 class _ChewieDemoState extends State<ChewieDemo> {
-  TargetPlatform _platform;
-  VideoPlayerController _videoPlayerController1;
-  VideoPlayerController _videoPlayerController2;
-  ChewieController _chewieController;
+  TargetPlatform? _platform;
+  late VideoPlayerController _videoPlayerController1;
+  late VideoPlayerController _videoPlayerController2;
+  ChewieController? _chewieController;
 
   @override
   void initState() {
@@ -37,17 +37,19 @@ class _ChewieDemoState extends State<ChewieDemo> {
   void dispose() {
     _videoPlayerController1.dispose();
     _videoPlayerController2.dispose();
-    _chewieController.dispose();
+    _chewieController?.dispose();
     super.dispose();
   }
 
   Future<void> initializePlayer() async {
     _videoPlayerController1 = VideoPlayerController.network(
         'https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4');
-    await _videoPlayerController1.initialize();
     _videoPlayerController2 = VideoPlayerController.network(
         'https://assets.mixkit.co/videos/preview/mixkit-a-girl-blowing-a-bubble-gum-at-an-amusement-park-1226-large.mp4');
-    await _videoPlayerController2.initialize();
+    await Future.wait([
+      _videoPlayerController1.initialize(),
+      _videoPlayerController2.initialize()
+    ]);
     _chewieController = ChewieController(
       videoPlayerController: _videoPlayerController1,
       autoPlay: true,
@@ -85,10 +87,10 @@ class _ChewieDemoState extends State<ChewieDemo> {
             Expanded(
               child: Center(
                 child: _chewieController != null &&
-                        _chewieController
-                            .videoPlayerController.value.initialized
+                        _chewieController!
+                            .videoPlayerController.value.isInitialized
                     ? Chewie(
-                        controller: _chewieController,
+                        controller: _chewieController!,
                       )
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -100,19 +102,19 @@ class _ChewieDemoState extends State<ChewieDemo> {
                       ),
               ),
             ),
-            FlatButton(
+            TextButton(
               onPressed: () {
-                _chewieController.enterFullScreen();
+                _chewieController!.enterFullScreen();
               },
               child: const Text('Fullscreen'),
             ),
             Row(
               children: <Widget>[
                 Expanded(
-                  child: FlatButton(
+                  child: TextButton(
                     onPressed: () {
                       setState(() {
-                        _chewieController.dispose();
+                        _chewieController!.dispose();
                         _videoPlayerController1.pause();
                         _videoPlayerController1.seekTo(const Duration());
                         _chewieController = ChewieController(
@@ -129,10 +131,10 @@ class _ChewieDemoState extends State<ChewieDemo> {
                   ),
                 ),
                 Expanded(
-                  child: FlatButton(
+                  child: TextButton(
                     onPressed: () {
                       setState(() {
-                        _chewieController.dispose();
+                        _chewieController!.dispose();
                         _videoPlayerController2.pause();
                         _videoPlayerController2.seekTo(const Duration());
                         _chewieController = ChewieController(
@@ -153,7 +155,7 @@ class _ChewieDemoState extends State<ChewieDemo> {
             Row(
               children: <Widget>[
                 Expanded(
-                  child: FlatButton(
+                  child: TextButton(
                     onPressed: () {
                       setState(() {
                         _platform = TargetPlatform.android;
@@ -166,7 +168,7 @@ class _ChewieDemoState extends State<ChewieDemo> {
                   ),
                 ),
                 Expanded(
-                  child: FlatButton(
+                  child: TextButton(
                     onPressed: () {
                       setState(() {
                         _platform = TargetPlatform.iOS;
